@@ -2,6 +2,10 @@ local ESP_Color = Color3.fromRGB(255, 0, 0) -- Red ESP
 local ESP_Transparency = 0.5
 local ESP_Size = UDim2.new(2, 0, 2, 0)
 
+local config = {
+    esp_enable = false, -- Set to true to enable ESP
+}
+
 -- Function to create ESP for a character
 local function createESP(playerModel)
     if not config.esp_enable then return end -- ESP is disabled, stop
