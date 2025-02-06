@@ -1,7 +1,11 @@
 local esp = {}
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
 local function create_esp_box(player)
-    if player == game.Players.LocalPlayer then return end -- Ignore yourself
+    if not player or not player.Character then return end
+    if player == LocalPlayer then return end -- Ignore yourself
 
     local highlight = Instance.new("Highlight")
     highlight.Parent = player.Character
@@ -14,16 +18,16 @@ local function create_esp_box(player)
 end
 
 function esp.enable()
-    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-        if player.Team ~= game.Players.LocalPlayer.Team then -- Only show enemies
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Team ~= LocalPlayer.Team then -- Only show enemies
             create_esp_box(player)
         end
     end
 
-    game:GetService("Players").PlayerAdded:Connect(function(player)
+    Players.PlayerAdded:Connect(function(player)
         player.CharacterAdded:Connect(function()
-            wait(1) -- Ensure character loads
-            if player.Team ~= game.Players.LocalPlayer.Team then
+            task.wait(1) -- Ensure character loads
+            if player.Team ~= LocalPlayer.Team then
                 create_esp_box(player)
             end
         end)
@@ -32,7 +36,7 @@ function esp.enable()
 end
 
 function esp.disable()
-    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+    for _, player in pairs(Players:GetPlayers()) do
         if player.Character then
             local highlight = player.Character:FindFirstChildOfClass("Highlight")
             if highlight then
