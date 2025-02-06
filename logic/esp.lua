@@ -25,6 +25,7 @@ local function createESP(obj)
     end
 end
 
+-- Function to enable ESP
 local function esp_enable()
     for _, obj in ipairs(workspace:GetChildren()) do
         if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("HumanoidRootPart") then
@@ -35,6 +36,7 @@ local function esp_enable()
     end
 end
 
+-- Function to disable ESP
 local function esp_disable()
     for _, obj in ipairs(game.CoreGui:GetChildren()) do
         if obj.Name == "ESP" then
@@ -43,7 +45,7 @@ local function esp_disable()
     end
 end
 
--- Assign functions to config
+-- Assign functions to config for external access
 config.esp_enable = esp_enable
 config.esp_disable = esp_disable
 
@@ -55,3 +57,6 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
         end
     end)
 end)
+
+-- Return config to be used in other scripts (if necessary)
+return config
