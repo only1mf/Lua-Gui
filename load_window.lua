@@ -86,10 +86,10 @@ end)
 local esp_sector = visuals_tab:CreateSection("ESP")
 esp_sector:CreateToggle("Enable ESP", config.visuals.esp_enabled, function(state)
     config.visuals.esp_enabled = state
-    if config.visuals.esp_enabled then
-        esp.enable()
+    if state then
+        esp.esp_enable()  -- Call esp_enable function from esp.lua
     else
-        esp.disable()
+        esp.esp_disable() -- Call esp_disable function from esp.lua
     end
 end)
 
