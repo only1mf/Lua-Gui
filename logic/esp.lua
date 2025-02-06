@@ -1,50 +1,49 @@
-local esp = {}
+local ESP_Color = Color3.fromRGB(255, 0, 0) -- Red ESP
+local ESP_Transparency = 0.5
+local ESP_Size = UDim2.new(2, 0, 2, 0)
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+-- Function to create ESP for a character
+local function createESP(playerModel)
+    if not config.esp_enable then return end -- ESP is disabled, stop
 
-local function create_esp_box(player)
-    if not player or not player.Character then return end
-    if player == LocalPlayer then return end -- Ignore yourself
+    if playerModel:FindFirstChild("HumanoidRootPart") then
+        local highlight = Instance.new("BillboardGui")
+        highlight.Adornee = playerModel.HumanoidRootPart
+        highlight.Size = ESP_Size
+        highlight.StudsOffset = Vector3.new(0, 2, 0)
+        highlight.AlwaysOnTop = true
+        highlight.Name = "ESP"
 
-    local highlight = Instance.new("Highlight")
-    highlight.Parent = player.Character
-    highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red for enemies
-    highlight.OutlineColor = Color3.fromRGB(0, 0, 0) -- Black outline
-    highlight.FillTransparency = 0.5
-    highlight.OutlineTransparency = 0
+        local frame = Instance.new("Frame", highlight)
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.BackgroundTransparency = ESP_Transparency
+        frame.BackgroundColor3 = ESP_Color
 
-    return highlight
-end
-
-function esp.enable()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player.Team ~= LocalPlayer.Team then -- Only show enemies
-            create_esp_box(player)
-        end
+        highlight.Parent = game.CoreGui
     end
-
-    Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function()
-            task.wait(1) -- Ensure character loads
-            if player.Team ~= LocalPlayer.Team then
-                create_esp_box(player)
-            end
-        end)
-    end)
-    print("[ESP] Enabled")
 end
 
-function esp.disable()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player.Character then
-            local highlight = player.Character:FindFirstChildOfClass("Highlight")
-            if highlight then
-                highlight:Destroy()
+-- Function to scan for players
+local function scanPlayers()
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("HumanoidRootPart") then
+            if not obj:FindFirstChild("ESP") then
+                createESP(obj)
             end
         end
     end
-    print("[ESP] Disabled")
 end
 
-return esp
+-- Main loop to update ESP
+while true do
+    if config.esp_enable then
+        scanPlayers()
+    else
+        for _, obj in ipairs(game.CoreGui:GetChildren()) do
+            if obj.Name == "ESP" then
+                obj:Destroy() -- Remove ESP when disabled
+            end
+        end
+    end
+    wait(1)
+end
