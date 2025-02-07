@@ -15,6 +15,7 @@ local config = {
     },
     visuals = {
         esp_enabled = false,
+        outline_enabled = false,
     },
     gunmod = {
         fast_reload = false,
@@ -91,6 +92,16 @@ esp_sector:CreateToggle("Enable ESP", config.visuals.esp_enabled, function(state
         esp.esp_enable()  -- Call esp_enable function from esp.lua
     else
         esp.esp_disable() -- Call esp_disable function from esp.lua
+    end
+end)
+
+local outline_sector = visuals_tab:CreateSection("Outline")
+outline_sector:CreateToggle("Enable Outline", config.visuals.esp_enabled, function(state)
+    config.visuals.esp_enabled = state
+    if state then
+        outline.outline_enable()  -- Call outline_enable function from outline.lua
+    else
+        outline.outline_disable() -- Call outline_disable function from outline.lua
     end
 end)
 
