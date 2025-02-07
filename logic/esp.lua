@@ -31,10 +31,6 @@ local function getPlayers()
     return players
 end
 
--- Section to control the player list mode
-visuals_section:CreateDropdown("Player List Mode", {"All Players", "Closest Players", "Alive Players"}, function(state)
-    player_list_mode = state
-end)
 
 -- ESP section that applies Chams to selected players based on the selected mode
 esp_sector:CreateToggle("Enable ESP", config.visuals.esp_enabled, function(state)
