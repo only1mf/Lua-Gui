@@ -1,80 +1,58 @@
--- Add this section under the visuals tab in the UI
+-- esp.lua
 
-local player_list_mode = "All Players"  -- Default mode for retrieving players
+local config = require(game.ReplicatedStorage:WaitForChild("config"))  -- Assuming the config file is shared
 
--- Define different player list retrieval methods
-local function getPlayers()
-    local players = {}
+local function esp_enable()
+    -- Check if ESP is enabled in the config
+    if config.visuals.esp_enabled then
+        -- Start listening for players
+        game:GetService("RunService").Heartbeat:Connect(function()
+            for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                if player == game.Players.LocalPlayer then continue end
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    -- Get the player's position
+                    local targetPart = player.Character:FindFirstChild("HumanoidRootPart")
+                    local targetPos, onScreen = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(targetPart.Position)
+                    if onScreen then
+                        -- Draw a box around the player's character
+                        local size = Vector2.new(100, 100)  -- Adjust box size as needed
+                        local position = Vector2.new(targetPos.X - size.X / 2, targetPos.Y - size.Y / 2)
 
-    if player_list_mode == "All Players" then
-        -- Get all players in the game
-        players = game:GetService("Players"):GetPlayers()
-    elseif player_list_mode == "Closest Players" then
-        -- Get players sorted by distance from the local player
-        local localPlayer = game:GetService("Players").LocalPlayer
-        local allPlayers = game:GetService("Players"):GetPlayers()
-        table.sort(allPlayers, function(a, b)
-            local distanceA = (a.Character.HumanoidRootPart.Position - localPlayer.Character.HumanoidRootPart.Position).Magnitude
-            local distanceB = (b.Character.HumanoidRootPart.Position - localPlayer.Character.HumanoidRootPart.Position).Magnitude
-            return distanceA < distanceB
+                        -- Create the ESP box
+                        local box = Instance.new("Frame")
+                        box.Size = UDim2.new(0, size.X, 0, size.Y)
+                        box.Position = UDim2.new(0, position.X, 0, position.Y)
+                        box.BorderSizePixel = 2
+                        box.BorderColor3 = Color3.fromRGB(255, 0, 0)
+                        box.BackgroundTransparency = 1
+                        box.Parent = game.Players.LocalPlayer.PlayerGui
+
+                        -- Draw player name
+                        local playerName = Instance.new("TextLabel")
+                        playerName.Text = player.Name
+                        playerName.Size = UDim2.new(0, 100, 0, 20)
+                        playerName.Position = UDim2.new(0, position.X, 0, position.Y - 20)
+                        playerName.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        playerName.TextStrokeTransparency = 0.8
+                        playerName.BackgroundTransparency = 1
+                        playerName.Parent = game.Players.LocalPlayer.PlayerGui
+                    end
+                end
+            end
         end)
-        players = allPlayers
-    elseif player_list_mode == "Alive Players" then
-        -- Filter only alive players
-        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                table.insert(players, player)
-            end
-        end
-    end
-
-    return players
-end
-
-
--- ESP section that applies Chams to selected players based on the selected mode
-esp_sector:CreateToggle("Enable ESP", config.visuals.esp_enabled, function(state)
-    config.visuals.esp_enabled = state
-    if state then
-        local players = getPlayers()
-        for _, player in ipairs(players) do
-            if player.Character and player.Character:FindFirstChild("Humanoid") then
-                createChams(player.Character)
-            end
-        end
-    else
-        esp_disable()  -- Call to disable Chams
-    end
-end)
-
--- Function to create Chams for a character (same as before)
-local function createChams(obj)
-    if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("HumanoidRootPart") then
-        print("Creating Chams for: " .. obj.Name)  -- Debugging print
-        local bodyParts = {"Head", "Torso", "LeftLeg", "RightLeg", "LeftArm", "RightArm"}
-
-        for _, partName in ipairs(bodyParts) do
-            local part = obj:FindFirstChild(partName)
-            if part then
-                local cham = Instance.new("MeshPart")
-                cham.Size = part.Size
-                cham.Position = part.Position
-                cham.Anchored = true
-                cham.CanCollide = false
-                cham.Parent = game.CoreGui
-                cham.Color = ESP_Color
-                cham.Transparency = ESP_Transparency
-                cham.CFrame = part.CFrame
-            end
-        end
     end
 end
 
--- Function to disable Chams
 local function esp_disable()
-    for _, obj in ipairs(game.CoreGui:GetChildren()) do
-        if obj.Name == "ESP" then
-            obj:Destroy()
+    -- Disable ESP by clearing existing ESP objects from the screen
+    for _, v in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
+        if v:IsA("Frame") or v:IsA("TextLabel") then
+            v:Destroy()
         end
     end
 end
+
+return {
+    esp_enable = esp_enable,
+    esp_disable = esp_disable,
+}
