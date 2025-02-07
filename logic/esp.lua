@@ -1,5 +1,4 @@
 -- Add this section under the visuals tab in the UI
-local visuals_tab = window:CreateTab("Visuals")
 
 local player_list_mode = "All Players"  -- Default mode for retrieving players
 
