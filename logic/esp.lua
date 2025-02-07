@@ -1,4 +1,4 @@
--- esp.lua
+-- esp.lua for executor environment
 
 local config = {
     visuals = {
@@ -7,31 +7,41 @@ local config = {
 }
 
 local function esp_enable()
-    -- Check if ESP is enabled in the config
+    -- Only proceed if ESP is enabled in config
     if config.visuals.esp_enabled then
-        -- Start listening for players
+        -- Listen to Heartbeat to update the ESP
         game:GetService("RunService").Heartbeat:Connect(function()
-            for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+            -- Get all players in the game
+            local players = game:GetService("Players"):GetPlayers()
+
+            for _, player in ipairs(players) do
+                -- Skip if the player is the local player
                 if player == game.Players.LocalPlayer then continue end
-                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    -- Get the player's position
-                    local targetPart = player.Character:FindFirstChild("HumanoidRootPart")
-                    local targetPos, onScreen = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(targetPart.Position)
+
+                -- Make sure the player's character exists and has the necessary part
+                local character = player.Character
+                if character and character:FindFirstChild("HumanoidRootPart") then
+                    local targetPart = character:FindFirstChild("HumanoidRootPart")
+
+                    -- Check if the part is visible on screen
+                    local camera = game:GetService("Workspace").CurrentCamera
+                    local targetPos, onScreen = camera:WorldToViewportPoint(targetPart.Position)
+
                     if onScreen then
-                        -- Draw a box around the player's character
-                        local size = Vector2.new(100, 100)  -- Adjust box size as needed
+                        -- Create ESP box and player name
+                        local size = Vector2.new(100, 100)  -- Box size
                         local position = Vector2.new(targetPos.X - size.X / 2, targetPos.Y - size.Y / 2)
 
-                        -- Create the ESP box
+                        -- Create a box around the character
                         local box = Instance.new("Frame")
                         box.Size = UDim2.new(0, size.X, 0, size.Y)
                         box.Position = UDim2.new(0, position.X, 0, position.Y)
                         box.BorderSizePixel = 2
-                        box.BorderColor3 = Color3.fromRGB(255, 0, 0)
+                        box.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Red box
                         box.BackgroundTransparency = 1
                         box.Parent = game.Players.LocalPlayer.PlayerGui
 
-                        -- Draw player name
+                        -- Add player name label
                         local playerName = Instance.new("TextLabel")
                         playerName.Text = player.Name
                         playerName.Size = UDim2.new(0, 100, 0, 20)
@@ -48,7 +58,7 @@ local function esp_enable()
 end
 
 local function esp_disable()
-    -- Disable ESP by clearing existing ESP objects from the screen
+    -- Disable ESP by clearing all ESP-related GUI elements
     for _, v in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
         if v:IsA("Frame") or v:IsA("TextLabel") then
             v:Destroy()
