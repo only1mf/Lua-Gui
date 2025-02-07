@@ -34,7 +34,7 @@ local config = {
 loadstring(game:HttpGet("https://raw.githubusercontent.com/only1mf/Lua-Gui/refs/heads/main/lib.lua"))()
 
 -- local aimbot = loadstring(game:HttpGet("https://raw.githubusercontent.com/only1mf/Lua-Gui/refs/heads/main/logic/aimbot.lua"))()
-local silent = loadstring(game:HttpGet("https://raw.githubusercontent.com/only1mf/Lua-Gui/refs/heads/main/logic/silent.lua"))()
+-- local silent = loadstring(game:HttpGet("https://raw.githubusercontent.com/only1mf/Lua-Gui/refs/heads/main/logic/silent.lua"))()
 local esp = loadstring(game:HttpGet("https://raw.githubusercontent.com/only1mf/Lua-Gui/refs/heads/main/logic/esp.lua"))()
 
 local window = library:CreateWindow({
