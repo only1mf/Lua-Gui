@@ -1,6 +1,10 @@
 -- esp.lua
 
-local config = require(game.ReplicatedStorage:WaitForChild("config"))  -- Assuming the config file is shared
+local config = {
+    visuals = {
+        esp_enabled = false,
+    }
+}
 
 local function esp_enable()
     -- Check if ESP is enabled in the config
