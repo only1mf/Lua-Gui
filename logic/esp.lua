@@ -1,50 +1,77 @@
-local ESP_Color = Color3.fromRGB(255, 0, 0) -- Red Chams
-local ESP_Transparency = 0.5 -- Transparency of the Chams
-local config = {
-    esp_enabled = false, -- Set to true to enable Chams
-}
+-- Add this section under the visuals tab in the UI
+local visuals_tab = window:CreateTab("Visuals")
 
--- Function to apply Chams to a character
+local player_list_mode = "All Players"  -- Default mode for retrieving players
+
+-- Define different player list retrieval methods
+local function getPlayers()
+    local players = {}
+
+    if player_list_mode == "All Players" then
+        -- Get all players in the game
+        players = game:GetService("Players"):GetPlayers()
+    elseif player_list_mode == "Closest Players" then
+        -- Get players sorted by distance from the local player
+        local localPlayer = game:GetService("Players").LocalPlayer
+        local allPlayers = game:GetService("Players"):GetPlayers()
+        table.sort(allPlayers, function(a, b)
+            local distanceA = (a.Character.HumanoidRootPart.Position - localPlayer.Character.HumanoidRootPart.Position).Magnitude
+            local distanceB = (b.Character.HumanoidRootPart.Position - localPlayer.Character.HumanoidRootPart.Position).Magnitude
+            return distanceA < distanceB
+        end)
+        players = allPlayers
+    elseif player_list_mode == "Alive Players" then
+        -- Filter only alive players
+        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                table.insert(players, player)
+            end
+        end
+    end
+
+    return players
+end
+
+-- Section to control the player list mode
+local visuals_section = visuals_tab:CreateSection("Player List Options")
+visuals_section:CreateDropdown("Player List Mode", {"All Players", "Closest Players", "Alive Players"}, function(state)
+    player_list_mode = state
+end)
+
+-- ESP section that applies Chams to selected players based on the selected mode
+local esp_sector = visuals_tab:CreateSection("ESP")
+esp_sector:CreateToggle("Enable ESP", config.visuals.esp_enabled, function(state)
+    config.visuals.esp_enabled = state
+    if state then
+        local players = getPlayers()
+        for _, player in ipairs(players) do
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                createChams(player.Character)
+            end
+        end
+    else
+        esp_disable()  -- Call to disable Chams
+    end
+end)
+
+-- Function to create Chams for a character (same as before)
 local function createChams(obj)
     if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("HumanoidRootPart") then
-        print("Creating Chams for: " .. obj.Name) -- Debugging print
+        print("Creating Chams for: " .. obj.Name)  -- Debugging print
         local bodyParts = {"Head", "Torso", "LeftLeg", "RightLeg", "LeftArm", "RightArm"}
-        
+
         for _, partName in ipairs(bodyParts) do
             local part = obj:FindFirstChild(partName)
             if part then
-                print("Found part: " .. partName) -- Debugging print
-
-                local cham = Instance.new("MeshPart") -- Using MeshPart for Chams
+                local cham = Instance.new("MeshPart")
                 cham.Size = part.Size
                 cham.Position = part.Position
                 cham.Anchored = true
                 cham.CanCollide = false
                 cham.Parent = game.CoreGui
-
                 cham.Color = ESP_Color
                 cham.Transparency = ESP_Transparency
-
-                -- Set part position to match the character
                 cham.CFrame = part.CFrame
-                print("Chams created for part: " .. partName) -- Debugging print
-            else
-                print("Part not found: " .. partName) -- Debugging print if part is missing
-            end
-        end
-    else
-        print("Skipping: " .. obj.Name .. " (not a valid character model)") -- Debugging print for invalid models
-    end
-end
-
--- Function to enable Chams
-local function esp_enable()
-    print("Enabling Chams...") -- Debugging print
-    for _, obj in ipairs(workspace:GetChildren()) do
-        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("HumanoidRootPart") then
-            if not obj:FindFirstChild("ESP") then
-                print("Creating Chams for: " .. obj.Name) -- Debugging print
-                createChams(obj)
             end
         end
     end
@@ -52,28 +79,9 @@ end
 
 -- Function to disable Chams
 local function esp_disable()
-    print("Disabling Chams...") -- Debugging print
     for _, obj in ipairs(game.CoreGui:GetChildren()) do
         if obj.Name == "ESP" then
-            print("Removing Chams: " .. obj.Name) -- Debugging print
             obj:Destroy()
         end
     end
 end
-
--- Assign functions to config for external access
-config.esp_enable = esp_enable
-config.esp_disable = esp_disable
-
--- Listen for player spawn or character reset to add Chams to new players
-game:GetService("Players").PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        print("Character added: " .. character.Name) -- Debugging print
-        if config.esp_enabled then
-            createChams(character)
-        end
-    end)
-end)
-
--- Return config to be used in other scripts (if necessary)
-return config
